@@ -1,0 +1,12 @@
+django
+djangorestframework
+django-filter
+drf-nested-routers
+celery[redis]
+django-celery-beat
+redis
+requests
+beautifulsoup4
+lxml
+python-dateutil
+whitenoise

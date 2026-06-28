@@ -1,0 +1,26 @@
+[
+  {
+    "model": "core.scrapesource",
+    "pk": 1,
+    "fields": {
+      "url": "file://scraper/fixtures/sample_page.html",
+      "label": "Sample Fixture Source",
+      "is_active": true,
+      "scrape_interval_hours": 3,
+      "last_scraped_at": null,
+      "last_scrape_status": "",
+      "last_scrape_log": "",
+      "selector_config": {
+        "container": ".event",
+        "event_name": ".title",
+        "start_time": ".start",
+        "end_time": ".end",
+        "location": ".location",
+        "description": ".description",
+        "source_url": ".link",
+        "default_category": "free_food"
+      },
+      "periodic_task": null
+    }
+  }
+]

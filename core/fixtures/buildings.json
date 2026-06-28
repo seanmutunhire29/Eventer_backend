@@ -1,0 +1,68 @@
+[
+  {
+    "model": "core.building",
+    "pk": 1,
+    "fields": {
+      "official_name": "Baker-Berry Library",
+      "lat": 43.7054,
+      "lng": -72.2887,
+      "geojson_id": "baker-berry-library"
+    }
+  },
+  {
+    "model": "core.building",
+    "pk": 2,
+    "fields": {
+      "official_name": "Hopkins Center for the Arts",
+      "lat": 43.7025,
+      "lng": -72.2882,
+      "geojson_id": "hopkins-center"
+    }
+  },
+  {
+    "model": "core.building",
+    "pk": 3,
+    "fields": {
+      "official_name": "Collis Center",
+      "lat": 43.7048,
+      "lng": -72.2865,
+      "geojson_id": "collis-center"
+    }
+  },
+  {
+    "model": "core.buildingalias",
+    "pk": 1,
+    "fields": {
+      "building": 1,
+      "alias": "Baker",
+      "source": "admin"
+    }
+  },
+  {
+    "model": "core.buildingalias",
+    "pk": 2,
+    "fields": {
+      "building": 1,
+      "alias": "Berry",
+      "source": "admin"
+    }
+  },
+  {
+    "model": "core.buildingalias",
+    "pk": 3,
+    "fields": {
+      "building": 2,
+      "alias": "Hop",
+      "source": "admin"
+    }
+  },
+  {
+    "model": "core.buildingalias",
+    "pk": 4,
+    "fields": {
+      "building": 3,
+      "alias": "Collis",
+      "source": "admin"
+    }
+  }
+]

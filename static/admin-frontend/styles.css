@@ -1,0 +1,22 @@
+* { box-sizing: border-box; }
+body { margin: 0; font-family: system-ui, sans-serif; background: #f5f7fa; color: #1a1a1a; }
+#app { display: flex; min-height: 100vh; }
+#sidebar { width: 220px; background: #00693e; color: #fff; padding: 1rem; }
+#sidebar h1 { font-size: 1.1rem; margin: 0 0 1rem; }
+#sidebar nav { display: flex; flex-direction: column; gap: 0.5rem; }
+#sidebar button { background: transparent; border: 1px solid rgba(255,255,255,0.3); color: #fff; padding: 0.5rem; cursor: pointer; border-radius: 4px; text-align: left; }
+#sidebar button:hover { background: rgba(255,255,255,0.1); }
+#content { flex: 1; padding: 1.5rem; }
+.page.hidden { display: none; }
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+.stat-card { background: #fff; border-radius: 8px; padding: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.stat-card strong { display: block; font-size: 1.5rem; margin-top: 0.25rem; }
+.toolbar { margin-bottom: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap; }
+button { cursor: pointer; }
+.error { color: #b00020; }
+#login-page { max-width: 360px; margin: 4rem auto; background: #fff; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+#login-page label { display: block; margin-bottom: 0.75rem; }
+#login-page input { width: 100%; padding: 0.5rem; margin-top: 0.25rem; }
+#source-editor, #alias-panel { margin-top: 1.5rem; background: #fff; padding: 1rem; border-radius: 8px; }
+#selector-config { width: 100%; font-family: monospace; }
+pre { background: #111; color: #eee; padding: 1rem; border-radius: 4px; overflow: auto; }

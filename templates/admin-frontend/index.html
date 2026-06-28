@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eventer Admin</title>
+  <link href="https://unpkg.com/tabulator-tables@6.2.5/dist/css/tabulator.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/static/admin-frontend/styles.css">
+</head>
+<body>
+  <div id="app">
+    <aside id="sidebar">
+      <h1>Eventer Admin</h1>
+      <nav>
+        <button data-page="dashboard">Dashboard</button>
+        <button data-page="events">Events</button>
+        <button data-page="unresolved">Unresolved Locations</button>
+        <button data-page="buildings">Buildings</button>
+        <button data-page="aliases">Suggest Aliases</button>
+        <button data-page="sources">Scrape Sources</button>
+        <button id="logout-btn">Logout</button>
+      </nav>
+    </aside>
+    <main id="content">
+      <section id="login-page" class="page">
+        <h2>Staff Login</h2>
+        <form id="login-form">
+          <label>Username <input name="username" required></label>
+          <label>Password <input name="password" type="password" required></label>
+          <button type="submit">Login</button>
+          <p id="login-error" class="error"></p>
+        </form>
+      </section>
+      <section id="dashboard-page" class="page hidden">
+        <h2>Dashboard</h2>
+        <div id="dashboard-stats" class="stats-grid"></div>
+        <h3>Recent Scrapes</h3>
+        <div id="recent-scrapes"></div>
+      </section>
+      <section id="events-page" class="page hidden">
+        <h2>Events Manager</h2>
+        <div class="toolbar">
+          <button id="bulk-verify">Bulk Verify</button>
+          <button id="bulk-deactivate">Bulk Deactivate</button>
+          <button id="new-event-btn">New Event</button>
+        </div>
+        <div id="events-table"></div>
+      </section>
+      <section id="unresolved-page" class="page hidden">
+        <h2>Unresolved Locations</h2>
+        <div id="unresolved-table"></div>
+      </section>
+      <section id="buildings-page" class="page hidden">
+        <h2>Buildings Manager</h2>
+        <button id="new-building-btn">New Building</button>
+        <div id="buildings-table"></div>
+        <div id="alias-panel" class="hidden">
+          <h3>Aliases for <span id="alias-building-name"></span></h3>
+          <div id="aliases-table"></div>
+          <form id="add-alias-form">
+            <input name="alias" placeholder="New alias" required>
+            <select name="source">
+              <option value="admin">Admin</option>
+              <option value="scraper">Scraper</option>
+              <option value="student_report">Student Report</option>
+            </select>
+            <button type="submit">Add Alias</button>
+          </form>
+        </div>
+      </section>
+      <section id="aliases-page" class="page hidden">
+        <h2>Suggest Aliases</h2>
+        <div id="suggestions-table"></div>
+      </section>
+      <section id="sources-page" class="page hidden">
+        <h2>Scrape Sources</h2>
+        <button id="new-source-btn">New Source</button>
+        <div id="sources-table"></div>
+        <div id="source-editor" class="hidden">
+          <h3>Edit Source</h3>
+          <form id="source-form">
+            <input type="hidden" name="id">
+            <label>Label <input name="label" required></label>
+            <label>URL <input name="url" required></label>
+            <label>Interval (hours) <input name="scrape_interval_hours" type="number" min="1" value="3"></label>
+            <label><input name="is_active" type="checkbox" checked> Active</label>
+            <label>Selector Config (JSON)</label>
+            <textarea id="selector-config" name="selector_config" rows="12"></textarea>
+            <button type="submit">Save</button>
+            <button type="button" id="run-now-btn">Run Now</button>
+            <button type="button" id="view-logs-btn">View Logs</button>
+          </form>
+          <pre id="source-logs"></pre>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script type="text/javascript" src="https://unpkg.com/tabulator-tables@6.2.5/dist/js/tabulator.min.js"></script>
+  <script src="/static/admin-frontend/app.js"></script>
+</body>
+</html>
