@@ -16,7 +16,7 @@ class EventViewSet(ReadOnlyModelViewSet):
 
     def get_queryset(self):
         return (
-            Event.objects.filter(is_active=True)
+            Event.objects.filter(is_active=True, review_status=Event.ReviewStatus.APPROVED)
             .select_related("building")
             .prefetch_related("building__aliases")
         )

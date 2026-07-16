@@ -2,9 +2,14 @@
 Django settings for eventer project.
 """
 
+import os
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+load_dotenv(BASE_DIR / ".env")
 
 SECRET_KEY = "django-insecure-(j9@k_a8@++7o&5=*9zt5y6$217%32()0aq0bw%nx*cedc%5)r"
 
@@ -102,3 +107,31 @@ CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = TIME_ZONE
+
+# Email scraper (IMAP inbox -> LLM event extraction)
+IMAP_HOST = os.environ.get("IMAP_HOST", "outlook.office365.com")
+IMAP_PORT = int(os.environ.get("IMAP_PORT", "993"))
+IMAP_EMAIL = os.environ.get("IMAP_EMAIL", "")
+IMAP_APP_PASSWORD = os.environ.get("IMAP_APP_PASSWORD", "")
+
+ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
+ANTHROPIC_MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-haiku-4-5-20251001")
+
+# Used to resolve relative/ambiguous dates and times found in email text
+EVENTS_LOCAL_TIMEZONE = os.environ.get("EVENTS_LOCAL_TIMEZONE", "America/New_York")
+
+# Outgoing mail (admin notifications) — reuses the same Gmail app password
+# already configured for IMAP, since Gmail app passwords work for SMTP too.
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = os.environ.get("SMTP_HOST", "smtp.gmail.com")
+EMAIL_PORT = int(os.environ.get("SMTP_PORT", "587"))
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.environ.get("IMAP_EMAIL", "")
+EMAIL_HOST_PASSWORD = os.environ.get("IMAP_APP_PASSWORD", "")
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+# Where the hourly "new pending events" summary gets sent.
+ADMIN_NOTIFICATION_EMAIL = os.environ.get("ADMIN_NOTIFICATION_EMAIL", "")
+
+# Used to build a clickable link to the review queue in notification emails.
+SITE_URL = os.environ.get("SITE_URL", "http://localhost:8000")

@@ -37,6 +37,7 @@ class AdminEventSerializer(serializers.ModelSerializer):
             "is_active",
             "is_verified",
             "missed_scrape_count",
+            "review_status",
         ]
 
 
@@ -45,6 +46,7 @@ class AdminScrapeSourceSerializer(serializers.ModelSerializer):
         model = ScrapeSource
         fields = [
             "id",
+            "source_type",
             "url",
             "label",
             "is_active",

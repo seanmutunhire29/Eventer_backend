@@ -79,6 +79,53 @@ def parse_events(html, selector_config):
     return parsed
 
 
+def upsert_event(item, source, default_review_status=None):
+    """Create/update a single parsed event dict, deduping on
+    (event_name, building, start_time) — the same key as the model's
+    unique_event_dedup constraint. Shared by the HTML and email scrapers so
+    there is exactly one place dedup logic lives.
+
+    default_review_status only applies the first time an event is created —
+    re-scraping an already-approved (or rejected) event must never silently
+    flip it back to pending."""
+    building, unresolved = resolve_building(item["location"])
+    defaults = {
+        "end_time": item["end_time"],
+        "description": item["description"],
+        "category": item["category"],
+        "source_url": item["source_url"] or source.url,
+        "scrape_source": source,
+        "building": building,
+        "unresolved_location": unresolved,
+        "is_active": True,
+        "missed_scrape_count": 0,
+    }
+    if building:
+        event, created = Event.objects.update_or_create(
+            event_name=item["event_name"],
+            building=building,
+            start_time=item["start_time"],
+            defaults=defaults,
+        )
+    else:
+        event, created = Event.objects.get_or_create(
+            event_name=item["event_name"],
+            start_time=item["start_time"],
+            scrape_source=source,
+            defaults=defaults,
+        )
+        if not created:
+            for key, value in defaults.items():
+                setattr(event, key, value)
+            event.save()
+
+    if created and default_review_status:
+        event.review_status = default_review_status
+        event.save(update_fields=["review_status"])
+
+    return event
+
+
 def apply_lifecycle(source, seen_event_ids):
     stale = Event.objects.filter(scrape_source=source, is_active=True).exclude(id__in=seen_event_ids)
     for event in stale:
@@ -125,36 +172,7 @@ def scrape_source(source_id):
 
     for item in parsed_events:
         try:
-            building, unresolved = resolve_building(item["location"])
-            defaults = {
-                "end_time": item["end_time"],
-                "description": item["description"],
-                "category": item["category"],
-                "source_url": item["source_url"] or source.url,
-                "scrape_source": source,
-                "building": building,
-                "unresolved_location": unresolved,
-                "is_active": True,
-                "missed_scrape_count": 0,
-            }
-            if building:
-                event, _ = Event.objects.update_or_create(
-                    event_name=item["event_name"],
-                    building=building,
-                    start_time=item["start_time"],
-                    defaults=defaults,
-                )
-            else:
-                event, created = Event.objects.get_or_create(
-                    event_name=item["event_name"],
-                    start_time=item["start_time"],
-                    scrape_source=source,
-                    defaults=defaults,
-                )
-                if not created:
-                    for key, value in defaults.items():
-                        setattr(event, key, value)
-                    event.save()
+            event = upsert_event(item, source)
             seen_event_ids.append(event.id)
             created_or_updated += 1
         except Exception as exc:

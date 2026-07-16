@@ -23,7 +23,7 @@ class AdminEventViewSet(viewsets.ModelViewSet):
     serializer_class = AdminEventSerializer
     permission_classes = [IsAdminUser]
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ["category", "building", "is_active", "is_verified", "scrape_source"]
+    filterset_fields = ["category", "building", "is_active", "is_verified", "scrape_source", "review_status"]
 
     def get_queryset(self):
         return Event.objects.select_related("building", "scrape_source").order_by("-start_time")
@@ -31,6 +31,11 @@ class AdminEventViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=["get"])
     def unresolved(self, request):
         qs = self.get_queryset().filter(unresolved_location__isnull=False).exclude(unresolved_location="")
+        return Response(self.get_serializer(qs, many=True).data)
+
+    @action(detail=False, methods=["get"])
+    def pending(self, request):
+        qs = self.get_queryset().filter(review_status=Event.ReviewStatus.PENDING)
         return Response(self.get_serializer(qs, many=True).data)
 
     @action(detail=False, methods=["post"])
@@ -45,9 +50,6 @@ class AdminEventViewSet(viewsets.ModelViewSet):
             count = qs.count()
             qs.delete()
             return Response({"deleted": count})
-        if action_type == "verify":
-            updated = qs.update(is_verified=True)
-            return Response({"verified": updated})
         if action_type == "change_category":
             category = request.data.get("category")
             if not category:
@@ -57,6 +59,12 @@ class AdminEventViewSet(viewsets.ModelViewSet):
         if action_type == "deactivate":
             updated = qs.update(is_active=False)
             return Response({"deactivated": updated})
+        if action_type == "approve":
+            updated = qs.update(review_status=Event.ReviewStatus.APPROVED)
+            return Response({"approved": updated})
+        if action_type == "reject":
+            updated = qs.update(review_status=Event.ReviewStatus.REJECTED)
+            return Response({"rejected": updated})
         return Response({"detail": "unknown action"}, status=status.HTTP_400_BAD_REQUEST)
 
 

@@ -23,6 +23,7 @@ function showPage(name) {
   document.querySelectorAll(".page").forEach((p) => p.classList.add("hidden"));
   document.getElementById(`${name}-page`).classList.remove("hidden");
   if (name === "dashboard") loadDashboard();
+  if (name === "review") loadReviewQueue();
   if (name === "events") loadEvents();
   if (name === "unresolved") loadUnresolved();
   if (name === "buildings") loadBuildings();
@@ -82,6 +83,48 @@ function destroyTable(name) {
   if (tables[name]) { tables[name].destroy(); delete tables[name]; }
 }
 
+async function loadReviewQueue() {
+  const data = await api("/events/pending/");
+  destroyTable("review");
+  tables.review = new Tabulator("#review-table", {
+    data, layout: "fitColumns", selectable: true, height: "500px",
+    placeholder: "Nothing pending review.",
+    columns: [
+      { formatter: "rowSelection", titleFormatter: "rowSelection", hozAlign: "center", headerSort: false, width: 40 },
+      { title: "Name", field: "event_name" },
+      { title: "Category", field: "category" },
+      { title: "Start", field: "start_time" },
+      { title: "Location", formatter: (cell) => {
+        const row = cell.getData();
+        return (row.building && row.building.official_name) || row.unresolved_location || "";
+      }},
+      { title: "Description", field: "description", formatter: "textarea" },
+      { title: "Approve", formatter: () => "Approve", width: 90, cellClick: async (_, cell) => {
+        await reviewAction("approve", [cell.getRow().getData().id]);
+        loadReviewQueue();
+      }},
+      { title: "Reject", formatter: () => "Reject", width: 90, cellClick: async (_, cell) => {
+        await reviewAction("reject", [cell.getRow().getData().id]);
+        loadReviewQueue();
+      }},
+    ],
+  });
+}
+
+async function reviewAction(action, ids) {
+  if (!ids.length) return alert("Select events first");
+  await api("/events/bulk/", { method: "POST", body: JSON.stringify({ action, ids }) });
+}
+
+document.getElementById("review-approve").addEventListener("click", async () => {
+  await reviewAction("approve", tables.review.getSelectedData().map((r) => r.id));
+  loadReviewQueue();
+});
+document.getElementById("review-reject").addEventListener("click", async () => {
+  await reviewAction("reject", tables.review.getSelectedData().map((r) => r.id));
+  loadReviewQueue();
+});
+
 async function loadEvents() {
   const data = await api("/events/");
   destroyTable("events");
@@ -91,11 +134,28 @@ async function loadEvents() {
       { title: "Name", field: "event_name", editor: "input" },
       { title: "Category", field: "category", editor: "input" },
       { title: "Start", field: "start_time" },
+      { title: "Review", field: "review_status" },
       { title: "Active", field: "is_active", formatter: "tickCross" },
-      { title: "Verified", field: "is_verified", formatter: "tickCross" },
       { title: "Save", formatter: () => "Save", width: 70, cellClick: async (_, cell) => {
         const row = cell.getRow().getData();
-        await api(`/events/${row.id}/`, { method: "PATCH", body: JSON.stringify(row) });
+        const btn = cell.getElement();
+        try {
+          await api(`/events/${row.id}/`, { method: "PATCH", body: JSON.stringify(row) });
+          btn.textContent = "Saved ✓";
+          setTimeout(() => { btn.textContent = "Save"; }, 1500);
+        } catch (err) {
+          btn.textContent = "Failed";
+          alert(`Save failed: ${err.message}`);
+          setTimeout(() => { btn.textContent = "Save"; }, 1500);
+        }
+      }},
+      { title: "Approve", formatter: () => "Approve", width: 90, cellClick: async (_, cell) => {
+        await reviewAction("approve", [cell.getRow().getData().id]);
+        loadEvents();
+      }},
+      { title: "Reject", formatter: () => "Reject", width: 90, cellClick: async (_, cell) => {
+        await reviewAction("reject", [cell.getRow().getData().id]);
+        loadEvents();
       }},
     ],
   });
@@ -108,7 +168,6 @@ async function bulkEventAction(action) {
   loadEvents();
 }
 
-document.getElementById("bulk-verify").addEventListener("click", () => bulkEventAction("verify"));
 document.getElementById("bulk-deactivate").addEventListener("click", () => bulkEventAction("deactivate"));
 document.getElementById("new-event-btn").addEventListener("click", async () => {
   const name = prompt("Event name?");
@@ -122,7 +181,6 @@ document.getElementById("new-event-btn").addEventListener("click", async () => {
       category: "club_org_meeting",
       other_info: {},
       is_active: true,
-      is_verified: false,
     }),
   });
   loadEvents();
@@ -297,9 +355,12 @@ document.getElementById("view-logs-btn").addEventListener("click", async () => {
   document.getElementById("source-logs").textContent = JSON.stringify(logs, null, 2);
 });
 
+const validPages = ["dashboard", "review", "events", "unresolved", "buildings", "aliases", "sources"];
+const requestedPage = validPages.includes(window.location.hash.slice(1)) ? window.location.hash.slice(1) : "dashboard";
+
 if (state.token) {
   document.getElementById("sidebar").style.display = "block";
-  showPage("dashboard");
+  showPage(requestedPage);
 } else {
   document.getElementById("sidebar").style.display = "none";
   showPage("login");
