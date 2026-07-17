@@ -97,15 +97,33 @@ class Event(models.Model):
 
     CATEGORY_ALIASES = {
         "food": Category.FREE_FOOD,
+        "free food": Category.FREE_FOOD,
         "academic": Category.ACADEMIC_LECTURE,
+        "lectures & seminars": Category.ACADEMIC_LECTURE,
+        "lectures and seminars": Category.ACADEMIC_LECTURE,
         "social": Category.SOCIAL_PARTY,
         "sports": Category.SPORTS_ATHLETICS,
+        "athletics & recreation": Category.SPORTS_ATHLETICS,
+        "athletics and recreation": Category.SPORTS_ATHLETICS,
         "arts": Category.ARTS_PERFORMANCE,
+        "performances": Category.ARTS_PERFORMANCE,
+        "exhibitions": Category.ARTS_PERFORMANCE,
+        "films": Category.ARTS_PERFORMANCE,
         "career": Category.CAREER_PROFESSIONAL,
+        "workshops & training": Category.CAREER_PROFESSIONAL,
+        "workshops and training": Category.CAREER_PROFESSIONAL,
+        "conferences": Category.CAREER_PROFESSIONAL,
         "club": Category.CLUB_ORG_MEETING,
+        "clubs & organizations": Category.CLUB_ORG_MEETING,
+        "clubs and organizations": Category.CLUB_ORG_MEETING,
         "religious": Category.RELIGIOUS_SPIRITUAL,
+        "spiritual & worship": Category.RELIGIOUS_SPIRITUAL,
+        "spiritual and worship": Category.RELIGIOUS_SPIRITUAL,
         "volunteer": Category.VOLUNTEER_COMMUNITY,
+        "service & volunteer": Category.VOLUNTEER_COMMUNITY,
+        "service and volunteer": Category.VOLUNTEER_COMMUNITY,
         "health": Category.HEALTH_WELLNESS,
+        "wellness": Category.HEALTH_WELLNESS,
     }
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

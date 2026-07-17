@@ -227,7 +227,7 @@
             <dt>Active</dt>
             <dd>When unchecked, scraping is paused for this source.</dd>
             <dt>Selector Config (JSON)</dt>
-            <dd>CSS selectors telling the scraper where to find each field on the page. Keys:</dd>
+            <dd>Parsing rules for this source. For Dartmouth Home Events, set <code>"parser": "dartmouth_home"</code> (optional keys: <code>page_limit</code>, <code>max_events</code>, <code>enrich_details</code>). For generic HTML pages, use CSS selector keys:</dd>
           </dl>
           <pre class="help-code">{
   "container": ".event",        // wrapper for each event on the page

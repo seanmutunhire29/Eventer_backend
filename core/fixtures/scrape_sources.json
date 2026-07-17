@@ -5,7 +5,7 @@
     "fields": {
       "url": "file://scraper/fixtures/sample_page.html",
       "label": "Sample Fixture Source",
-      "is_active": true,
+      "is_active": false,
       "scrape_interval_hours": 3,
       "last_scraped_at": null,
       "last_scrape_status": "",
@@ -19,6 +19,28 @@
         "description": ".description",
         "source_url": ".link",
         "default_category": "free_food"
+      },
+      "periodic_task": null
+    }
+  },
+  {
+    "model": "core.scrapesource",
+    "pk": 2,
+    "fields": {
+      "url": "https://home.dartmouth.edu/events",
+      "label": "Dartmouth Home Events",
+      "is_active": true,
+      "scrape_interval_hours": 3,
+      "last_scraped_at": null,
+      "last_scrape_status": "",
+      "last_scrape_log": "",
+      "selector_config": {
+        "parser": "dartmouth_home",
+        "page_limit": 50,
+        "max_events": 500,
+        "enrich_details": true,
+        "detail_workers": 8,
+        "default_category": "club_org_meeting"
       },
       "periodic_task": null
     }
