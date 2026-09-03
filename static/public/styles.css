@@ -24,7 +24,7 @@ body {
   line-height: 1.5;
 }
 
-h1, h2, h3, .brand span {
+h1, h2, h3 {
   font-family: Sora, Inter, sans-serif;
   letter-spacing: -0.02em;
 }
@@ -43,18 +43,13 @@ a { color: var(--primary); }
 .brand {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
   text-decoration: none;
-  color: var(--primary);
-  font-weight: 700;
-  font-size: 1.1rem;
 }
 
 .brand img {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  object-fit: cover;
+  display: block;
+  height: 28px;
+  width: auto;
 }
 
 .site-header nav {
@@ -152,10 +147,8 @@ a { color: var(--primary); }
 }
 
 .hero-mark img {
-  width: min(280px, 70vw);
+  width: min(360px, 80vw);
   height: auto;
-  border-radius: 36px;
-  box-shadow: var(--shadow);
 }
 
 .pitch, .features, .install {
