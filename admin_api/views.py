@@ -4,8 +4,9 @@ from django.db.models import Count, Q
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets
+from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.decorators import action, api_view, permission_classes
-from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.response import Response
 
 from core.models import Building, BuildingAlias, Event, ScrapeSource
@@ -17,6 +18,18 @@ from .serializers import (
     AdminEventSerializer,
     AdminScrapeSourceSerializer,
 )
+
+
+class AdminObtainAuthToken(ObtainAuthToken):
+    """Same as DRF's stock obtain_auth_token, but explicitly has no
+    authentication classes. Otherwise this endpoint inherits
+    SessionAuthentication from DEFAULT_AUTHENTICATION_CLASSES, which
+    enforces CSRF checks whenever the browser already has a Django session
+    cookie (e.g. from being logged into /admin/) — rejecting the JS login
+    POST with 403 even though this endpoint's whole purpose is to hand out
+    a token to someone who doesn't have one yet."""
+    authentication_classes = []
+    permission_classes = [AllowAny]
 
 
 class AdminEventViewSet(viewsets.ModelViewSet):

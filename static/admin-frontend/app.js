@@ -3,6 +3,18 @@ const tokenKey = "eventer_admin_token";
 
 const state = { token: sessionStorage.getItem(tokenKey), selectedBuildingId: null, selectedSourceId: null };
 let tables = {};
+let buildingOptionsCache = null;
+
+// { [buildingId]: "Official Name" } for the searchable building-picker
+// editor used in Unresolved Locations and Review Queue. Buildings are
+// imported from the frontend's geojson (see import_buildings_geojson) so
+// picking one always gives a location that's real and mappable.
+async function getBuildingOptions() {
+  if (buildingOptionsCache) return buildingOptionsCache;
+  const buildings = await api("/buildings/");
+  buildingOptionsCache = Object.fromEntries(buildings.map((b) => [b.id, b.official_name]));
+  return buildingOptionsCache;
+}
 
 function authHeaders() {
   return state.token ? { Authorization: `Token ${state.token}`, "Content-Type": "application/json" } : { "Content-Type": "application/json" };
@@ -84,7 +96,7 @@ function destroyTable(name) {
 }
 
 async function loadReviewQueue() {
-  const data = await api("/events/pending/");
+  const [data, buildingOptions] = await Promise.all([api("/events/pending/"), getBuildingOptions()]);
   destroyTable("review");
   tables.review = new Tabulator("#review-table", {
     data, layout: "fitColumns", selectable: true, height: "500px",
@@ -94,10 +106,21 @@ async function loadReviewQueue() {
       { title: "Name", field: "event_name" },
       { title: "Category", field: "category" },
       { title: "Start", field: "start_time" },
-      { title: "Location", formatter: (cell) => {
-        const row = cell.getData();
-        return (row.building && row.building.official_name) || row.unresolved_location || "";
-      }},
+      { title: "Scraped Location", field: "unresolved_location", width: 140 },
+      {
+        title: "Match Building",
+        field: "building",
+        editor: "list",
+        editorParams: { values: buildingOptions, autocomplete: true, listOnEmpty: true, placeholderText: "Search buildings..." },
+        formatter: (cell) => buildingOptions[cell.getValue()] ?? "— unresolved —",
+        cellEdited: async (cell) => {
+          const row = cell.getRow().getData();
+          await api(`/events/${row.id}/`, {
+            method: "PATCH",
+            body: JSON.stringify({ building: parseInt(row.building, 10), unresolved_location: null }),
+          });
+        },
+      },
       { title: "Description", field: "description", formatter: "textarea" },
       { title: "Approve", formatter: () => "Approve", width: 90, cellClick: async (_, cell) => {
         await reviewAction("approve", [cell.getRow().getData().id]);
@@ -187,18 +210,24 @@ document.getElementById("new-event-btn").addEventListener("click", async () => {
 });
 
 async function loadUnresolved() {
-  const data = await api("/events/unresolved/");
+  const [data, buildingOptions] = await Promise.all([api("/events/unresolved/"), getBuildingOptions()]);
   destroyTable("unresolved");
   tables.unresolved = new Tabulator("#unresolved-table", {
     data, layout: "fitColumns", height: "400px",
     columns: [
       { title: "Event", field: "event_name" },
       { title: "Location", field: "unresolved_location" },
-      { title: "Assign Building ID", field: "building", editor: "input" },
+      {
+        title: "Match Building",
+        field: "building",
+        editor: "list",
+        editorParams: { values: buildingOptions, autocomplete: true, listOnEmpty: true, placeholderText: "Search buildings..." },
+        formatter: (cell) => buildingOptions[cell.getValue()] ?? "",
+      },
       { title: "Save Alias", formatter: () => "Assign", cellClick: async (_, cell) => {
         const row = cell.getRow().getData();
         const buildingId = row.building;
-        if (!buildingId) return alert("Enter building ID");
+        if (!buildingId) return alert("Pick a building first");
         await api(`/events/${row.id}/`, {
           method: "PATCH",
           body: JSON.stringify({ building: parseInt(buildingId, 10), unresolved_location: null }),
@@ -275,6 +304,7 @@ document.getElementById("new-building-btn").addEventListener("click", async () =
     method: "POST",
     body: JSON.stringify({ official_name: name, lat: 43.7, lng: -72.29, geojson_id: name.toLowerCase().replace(/\s+/g, "-") }),
   });
+  buildingOptionsCache = null;
   loadBuildings();
 });
 
