@@ -34,6 +34,9 @@ async function api(path, options = {}) {
 function showPage(name) {
   document.querySelectorAll(".page").forEach((p) => p.classList.add("hidden"));
   document.getElementById(`${name}-page`).classList.remove("hidden");
+  document.querySelectorAll("#sidebar nav button[data-page]").forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.page === name);
+  });
   if (name === "dashboard") loadDashboard();
   if (name === "review") loadReviewQueue();
   if (name === "events") loadEvents();
@@ -41,6 +44,14 @@ function showPage(name) {
   if (name === "buildings") loadBuildings();
   if (name === "aliases") loadSuggestions();
   if (name === "sources") loadSources();
+}
+
+function showHelpSection(sectionId) {
+  showPage("help");
+  requestAnimationFrame(() => {
+    const el = document.getElementById(sectionId);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
 }
 
 function logout() {
@@ -77,6 +88,13 @@ document.getElementById("login-form").addEventListener("submit", async (e) => {
 document.getElementById("logout-btn").addEventListener("click", logout);
 document.querySelectorAll("#sidebar nav button[data-page]").forEach((btn) => {
   btn.addEventListener("click", () => showPage(btn.dataset.page));
+});
+
+document.querySelectorAll(".help-link").forEach((link) => {
+  link.addEventListener("click", (e) => {
+    e.preventDefault();
+    showHelpSection(link.dataset.help);
+  });
 });
 
 async function loadDashboard() {

@@ -6,7 +6,22 @@ body { margin: 0; font-family: system-ui, sans-serif; background: #f5f7fa; color
 #sidebar nav { display: flex; flex-direction: column; gap: 0.5rem; }
 #sidebar button { background: transparent; border: 1px solid rgba(255,255,255,0.3); color: #fff; padding: 0.5rem; cursor: pointer; border-radius: 4px; text-align: left; }
 #sidebar button:hover { background: rgba(255,255,255,0.1); }
-#content { flex: 1; padding: 1.5rem; }
+#sidebar button.active { background: rgba(255,255,255,0.2); border-color: #fff; font-weight: 600; }
+#content { flex: 1; padding: 1.5rem; max-width: 960px; }
+.page-intro { color: #555; margin: -0.5rem 0 1rem; font-size: 0.95rem; }
+.help-link { color: #00693e; }
+.help-toc { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem; padding: 1rem; background: #fff; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.help-toc a { color: #00693e; text-decoration: none; padding: 0.35rem 0.65rem; border: 1px solid #c8e6d4; border-radius: 4px; font-size: 0.9rem; }
+.help-toc a:hover { background: #e8f5ee; }
+.help-article { background: #fff; border-radius: 8px; padding: 1.25rem 1.5rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.08); scroll-margin-top: 1rem; }
+.help-article h3 { margin-top: 0; color: #00693e; }
+.help-article h4 { margin-bottom: 0.5rem; font-size: 0.95rem; }
+.help-dl { margin: 0.5rem 0 0; }
+.help-dl dt { font-weight: 600; margin-top: 0.75rem; color: #333; }
+.help-dl dd { margin: 0.15rem 0 0 0; color: #555; line-height: 1.5; }
+.help-list { margin: 0.5rem 0 0; padding-left: 1.25rem; color: #555; line-height: 1.6; }
+.help-code { font-size: 0.85rem; line-height: 1.5; margin: 0.75rem 0 0; }
+.help-article code { background: #f0f0f0; padding: 0.1rem 0.35rem; border-radius: 3px; font-size: 0.9em; }
 .page.hidden { display: none; }
 .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
 .stat-card { background: #fff; border-radius: 8px; padding: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }

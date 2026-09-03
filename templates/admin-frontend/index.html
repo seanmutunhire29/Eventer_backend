@@ -19,6 +19,7 @@
         <button data-page="buildings">Buildings</button>
         <button data-page="aliases">Suggest Aliases</button>
         <button data-page="sources">Scrape Sources</button>
+        <button data-page="help">Help</button>
         <button id="logout-btn">Logout</button>
       </nav>
     </aside>
@@ -34,6 +35,7 @@
       </section>
       <section id="dashboard-page" class="page hidden">
         <h2>Dashboard</h2>
+        <p class="page-intro">Overview of campus events and scraper health. <a href="#" class="help-link" data-help="help-dashboard">What do these numbers mean?</a></p>
         <div id="dashboard-stats" class="stats-grid"></div>
         <h3>Recent Scrapes</h3>
         <div id="recent-scrapes"></div>
@@ -49,6 +51,7 @@
       </section>
       <section id="events-page" class="page hidden">
         <h2>Events Manager</h2>
+        <p class="page-intro">View, edit, and create events shown in the mobile app. <a href="#" class="help-link" data-help="help-events">How do I manage events?</a></p>
         <div class="toolbar">
           <button id="bulk-deactivate">Bulk Deactivate</button>
           <button id="new-event-btn">New Event</button>
@@ -57,10 +60,12 @@
       </section>
       <section id="unresolved-page" class="page hidden">
         <h2>Unresolved Locations</h2>
+        <p class="page-intro">Events the scraper couldn't match to a campus building. <a href="#" class="help-link" data-help="help-unresolved">How do I fix these?</a></p>
         <div id="unresolved-table"></div>
       </section>
       <section id="buildings-page" class="page hidden">
         <h2>Buildings Manager</h2>
+        <p class="page-intro">Campus buildings and the nicknames the scraper recognizes. <a href="#" class="help-link" data-help="help-buildings">What are aliases?</a></p>
         <button id="new-building-btn">New Building</button>
         <div id="buildings-table"></div>
         <div id="alias-panel" class="hidden">
@@ -79,10 +84,12 @@
       </section>
       <section id="aliases-page" class="page hidden">
         <h2>Suggest Aliases</h2>
+        <p class="page-intro">Location strings that keep failing to match — assign them to buildings. <a href="#" class="help-link" data-help="help-suggest-aliases">How does this work?</a></p>
         <div id="suggestions-table"></div>
       </section>
       <section id="sources-page" class="page hidden">
         <h2>Scrape Sources</h2>
+        <p class="page-intro">Websites Eventer pulls events from automatically. <a href="#" class="help-link" data-help="help-sources">How do scrape sources work?</a></p>
         <button id="new-source-btn">New Source</button>
         <div id="sources-table"></div>
         <div id="source-editor" class="hidden">
@@ -101,6 +108,179 @@
           </form>
           <pre id="source-logs"></pre>
         </div>
+      </section>
+      <section id="help-page" class="page hidden">
+        <h2>Help &amp; Guide</h2>
+        <p class="page-intro">Plain-language reference for every section of the admin portal.</p>
+        <nav class="help-toc">
+          <a href="#help-overview">Overview</a>
+          <a href="#help-dashboard">Dashboard</a>
+          <a href="#help-events">Events Manager</a>
+          <a href="#help-unresolved">Unresolved Locations</a>
+          <a href="#help-buildings">Buildings Manager</a>
+          <a href="#help-suggest-aliases">Suggest Aliases</a>
+          <a href="#help-sources">Scrape Sources</a>
+          <a href="#help-workflows">Common Workflows</a>
+        </nav>
+
+        <article class="help-article" id="help-overview">
+          <h3>Overview</h3>
+          <p>Eventer collects campus events from websites (scrape sources), matches them to buildings on the Dartmouth map, and serves them to the mobile app. As an admin, you review scraped data, fix bad locations, and add events that aren't on any website.</p>
+          <dl class="help-dl">
+            <dt>Active</dt>
+            <dd>Event is visible in the mobile app. Inactive events are hidden but kept in the database.</dd>
+            <dt>Verified</dt>
+            <dd>A staff member has reviewed the event and confirmed it looks correct. Unverified events still show in the app unless deactivated.</dd>
+            <dt>Scraper</dt>
+            <dd>The automated job that reads event websites every few hours and creates/updates events.</dd>
+            <dt>Alias</dt>
+            <dd>An alternate name for a building (e.g. "Collis" for "Collis Center"). The scraper uses aliases to figure out where an event is.</dd>
+          </dl>
+        </article>
+
+        <article class="help-article" id="help-dashboard">
+          <h3>Dashboard</h3>
+          <p>Your at-a-glance health check. Use it to spot problems before users do.</p>
+          <dl class="help-dl">
+            <dt>Events Today</dt>
+            <dd>Active events starting today (UTC). A sudden drop may mean a scrape failed.</dd>
+            <dt>Active This Week</dt>
+            <dd>Events happening in the next 7 days that are still active.</dd>
+            <dt>Scrape Health (24h)</dt>
+            <dd>Percentage of scrape runs in the last 24 hours that succeeded. Below 100% — check Scrape Sources and their logs.</dd>
+            <dt>Unresolved Locations</dt>
+            <dd>Events where the scraper couldn't match a location string to a building. Click through to Unresolved Locations to fix them.</dd>
+            <dt>Recent Scrapes</dt>
+            <dd>Latest run per source: status (<code>success</code>, <code>partial</code>, <code>failed</code>) and a short log message.</dd>
+          </dl>
+        </article>
+
+        <article class="help-article" id="help-events">
+          <h3>Events Manager</h3>
+          <p>All events in the system. Scraped events appear here automatically; you can also create events by hand.</p>
+          <h4>Table columns</h4>
+          <dl class="help-dl">
+            <dt>Name</dt>
+            <dd>Event title shown in the app. Click the cell to edit inline, then click <strong>Save</strong> on that row.</dd>
+            <dt>Category</dt>
+            <dd>Event type (e.g. <code>free_food</code>, <code>academic_lecture</code>). Controls icon and color in the app.</dd>
+            <dt>Start</dt>
+            <dd>When the event begins (stored in UTC).</dd>
+            <dt>Active</dt>
+            <dd>✓ = visible in app. ✗ = hidden (soft delete).</dd>
+            <dt>Verified</dt>
+            <dd>✓ = you've reviewed it. Use Bulk Verify after checking a batch of scraped events.</dd>
+          </dl>
+          <h4>Actions</h4>
+          <ul class="help-list">
+            <li><strong>Select rows</strong> — click row checkboxes, then use Bulk Verify or Bulk Deactivate.</li>
+            <li><strong>Bulk Verify</strong> — marks selected events as reviewed.</li>
+            <li><strong>Bulk Deactivate</strong> — hides selected events from the app without deleting them.</li>
+            <li><strong>New Event</strong> — creates a manual event (prompts for a name; set other fields in the table after).</li>
+          </ul>
+        </article>
+
+        <article class="help-article" id="help-unresolved">
+          <h3>Unresolved Locations</h3>
+          <p>When the scraper reads a location like "Mysterious Hall" and can't match it to any building or alias, the event lands here with the raw location string.</p>
+          <h4>How to fix one</h4>
+          <ol class="help-list">
+            <li>Find the correct building in <strong>Buildings Manager</strong> and note its <strong>ID</strong> number.</li>
+            <li>In the <strong>Assign Building ID</strong> column, type that ID.</li>
+            <li>Click <strong>Assign</strong>.</li>
+            <li>If prompted, choose <strong>Yes</strong> to save the location string as a new alias — future scrapes will auto-match it.</li>
+          </ol>
+        </article>
+
+        <article class="help-article" id="help-buildings">
+          <h3>Buildings Manager</h3>
+          <p>Buildings must match the campus map (GeoJSON) in the mobile app. Each building has an official name, coordinates, and optional aliases.</p>
+          <dl class="help-dl">
+            <dt>Official Name</dt>
+            <dd>Canonical name (e.g. "Baker-Berry Library"). Should match the map footprint name.</dd>
+            <dt>Lat / Lng</dt>
+            <dd>Map pin coordinates for the building center.</dd>
+            <dt>GeoJSON ID</dt>
+            <dd>Identifier linking this record to the map asset in the mobile app. Must stay in sync with GeoJSON <code>name</code> / feature id.</dd>
+            <dt>Aliases</dt>
+            <dd>Comma-separated nicknames shown in the table. Click <strong>Aliases</strong> on a row to add or remove them.</dd>
+          </dl>
+          <h4>Alias sources</h4>
+          <dl class="help-dl">
+            <dt>admin</dt>
+            <dd>You added it manually.</dd>
+            <dt>scraper</dt>
+            <dd>Created automatically from scrape data.</dd>
+            <dt>student_report</dt>
+            <dd>Reported by a student (future use).</dd>
+          </dl>
+          <p><strong>New Building</strong> — adds a placeholder; update name, coordinates, and GeoJSON ID before relying on it.</p>
+        </article>
+
+        <article class="help-article" id="help-suggest-aliases">
+          <h3>Suggest Aliases</h3>
+          <p>A ranked list of location strings that failed to match during scraping, with how many events used each string. Use this to spot patterns — e.g. if "Hop" appears 12 times, add it as an alias for Hopkins Center in Buildings Manager.</p>
+          <p>This page is read-only. To act on a suggestion, go to <strong>Buildings Manager → Aliases</strong> on the correct building, or fix events in <strong>Unresolved Locations</strong>.</p>
+        </article>
+
+        <article class="help-article" id="help-sources">
+          <h3>Scrape Sources</h3>
+          <p>Each source is a website Eventer reads on a schedule (default: every 3 hours).</p>
+          <dl class="help-dl">
+            <dt>Label</dt>
+            <dd>Human-readable name (e.g. "Dartmouth Mirror Events").</dd>
+            <dt>URL</dt>
+            <dd>Page to fetch. For local testing, URLs starting with <code>file://</code> read from a file in the repo.</dd>
+            <dt>Interval (hours)</dt>
+            <dd>How often to scrape. Changing this updates the background schedule automatically.</dd>
+            <dt>Active</dt>
+            <dd>When unchecked, scraping is paused for this source.</dd>
+            <dt>Selector Config (JSON)</dt>
+            <dd>Parsing rules for this source. For Dartmouth Home Events, set <code>"parser": "dartmouth_home"</code> (optional keys: <code>page_limit</code>, <code>max_events</code>, <code>enrich_details</code>). For generic HTML pages, use CSS selector keys:</dd>
+          </dl>
+          <pre class="help-code">{
+  "container": ".event",        // wrapper for each event on the page
+  "event_name": ".title",       // event title
+  "start_time": ".start",       // start date/time text
+  "end_time": ".end",           // end date/time (optional)
+  "location": ".location",      // building/room string
+  "description": ".description",
+  "source_url": ".link",        // link to event detail page
+  "default_category": "free_food"  // fallback if no category on page
+}</pre>
+          <h4>Buttons</h4>
+          <ul class="help-list">
+            <li><strong>Save</strong> — stores changes and updates the scrape schedule.</li>
+            <li><strong>Run Now</strong> — triggers an immediate scrape (requires Celery worker running).</li>
+            <li><strong>View Logs</strong> — shows the most recent scrape result and any error messages.</li>
+          </ul>
+        </article>
+
+        <article class="help-article" id="help-workflows">
+          <h3>Common Workflows</h3>
+          <h4>Daily check</h4>
+          <ol class="help-list">
+            <li>Open <strong>Dashboard</strong> — confirm Scrape Health is 100% and Unresolved Locations is low.</li>
+            <li>Review <strong>Events Manager</strong> — bulk-verify events that look correct.</li>
+          </ol>
+          <h4>Fix a bad location from scraping</h4>
+          <ol class="help-list">
+            <li>Go to <strong>Unresolved Locations</strong>.</li>
+            <li>Assign the correct building ID and save as alias if prompted.</li>
+          </ol>
+          <h4>Add an event not on any website</h4>
+          <ol class="help-list">
+            <li><strong>Events Manager → New Event</strong>.</li>
+            <li>Edit category, times, and building in the table; click Save on the row.</li>
+            <li>Mark it Verified when done.</li>
+          </ol>
+          <h4>Add a new event website</h4>
+          <ol class="help-list">
+            <li><strong>Scrape Sources → New Source</strong>.</li>
+            <li>Enter the URL and write selector config JSON for that page's HTML structure.</li>
+            <li>Save, then <strong>Run Now</strong> and check logs. Fix selectors if status is <code>failed</code> or <code>partial</code>.</li>
+          </ol>
+        </article>
       </section>
     </main>
   </div>
