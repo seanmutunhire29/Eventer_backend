@@ -10,3 +10,5 @@ beautifulsoup4
 lxml
 python-dateutil
 whitenoise
+python-dotenv
+anthropic

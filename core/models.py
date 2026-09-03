@@ -44,7 +44,14 @@ class ScrapeSource(models.Model):
         FAILED = "failed", "Failed"
         PARTIAL = "partial", "Partial"
 
-    url = models.URLField(max_length=500)
+    class SourceType(models.TextChoices):
+        HTML = "html", "HTML page"
+        EMAIL = "email", "Email inbox"
+
+    source_type = models.CharField(
+        max_length=20, choices=SourceType.choices, default=SourceType.HTML
+    )
+    url = models.URLField(max_length=500, blank=True)
     label = models.CharField(max_length=100)
     is_active = models.BooleanField(default=True)
     scrape_interval_hours = models.PositiveIntegerField(default=3)
@@ -126,6 +133,11 @@ class Event(models.Model):
         "wellness": Category.HEALTH_WELLNESS,
     }
 
+    class ReviewStatus(models.TextChoices):
+        PENDING = "pending", "Pending review"
+        APPROVED = "approved", "Approved"
+        REJECTED = "rejected", "Rejected"
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     event_name = models.CharField(max_length=255)
     building = models.ForeignKey(
@@ -150,6 +162,10 @@ class Event(models.Model):
     is_active = models.BooleanField(default=True)
     is_verified = models.BooleanField(default=False)
     missed_scrape_count = models.PositiveIntegerField(default=0)
+    review_status = models.CharField(
+        max_length=20, choices=ReviewStatus.choices, default=ReviewStatus.APPROVED
+    )
+    admin_notified_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         ordering = ["start_time"]

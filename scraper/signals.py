@@ -15,11 +15,16 @@ def sync_periodic_task(source):
         every=source.scrape_interval_hours,
         period=IntervalSchedule.HOURS,
     )
+    task_path = (
+        "scraper.scrape_email_source_task"
+        if source.source_type == source.SourceType.EMAIL
+        else "scraper.scrape_source_task"
+    )
     periodic_task, _ = PeriodicTask.objects.update_or_create(
         name=task_name,
         defaults={
             "interval": schedule,
-            "task": "scraper.scrape_source_task",
+            "task": task_path,
             "args": f"[{source.pk}]",
             "enabled": source.is_active,
         },

@@ -102,27 +102,51 @@ def parse_events(html, selector_config):
     return parsed
 
 
-def fetch_parsed_events(source):
-    """Return normalized event dicts for a scrape source."""
-    config = source.selector_config or {}
-    parser_name = config.get("parser")
-    if parser_name == "dartmouth_home" or "home.dartmouth.edu/events" in (source.url or ""):
-        return fetch_dartmouth_events(config)
+def upsert_event(item, source, default_review_status=None):
+    """Create/update a single parsed event dict, deduping on
+    (event_name, building, start_time) — the same key as the model's
+    unique_event_dedup constraint. Shared by the HTML and email scrapers so
+    there is exactly one place dedup logic lives.
 
-    if source.url.startswith("file://"):
-        file_path = Path(source.url.replace("file://", "", 1))
-        if not file_path.is_absolute():
-            file_path = settings.BASE_DIR / file_path
-        html = file_path.read_text(encoding="utf-8")
-    else:
-        response = requests.get(
-            source.url,
-            timeout=30,
-            headers={"User-Agent": "EventerBot/1.0 (+https://eventer.app)"},
+    default_review_status only applies the first time an event is created —
+    re-scraping an already-approved (or rejected) event must never silently
+    flip it back to pending."""
+    building, unresolved = resolve_building(item["location"])
+    defaults = {
+        "end_time": item["end_time"],
+        "description": item["description"],
+        "category": item["category"],
+        "source_url": item["source_url"] or source.url,
+        "scrape_source": source,
+        "building": building,
+        "unresolved_location": unresolved,
+        "is_active": True,
+        "missed_scrape_count": 0,
+    }
+    if building:
+        event, created = Event.objects.update_or_create(
+            event_name=item["event_name"],
+            building=building,
+            start_time=item["start_time"],
+            defaults=defaults,
         )
-        response.raise_for_status()
-        html = response.text
-    return parse_events(html, config)
+    else:
+        event, created = Event.objects.get_or_create(
+            event_name=item["event_name"],
+            start_time=item["start_time"],
+            scrape_source=source,
+            defaults=defaults,
+        )
+        if not created:
+            for key, value in defaults.items():
+                setattr(event, key, value)
+            event.save()
+
+    if created and default_review_status:
+        event.review_status = default_review_status
+        event.save(update_fields=["review_status"])
+
+    return event
 
 
 def apply_lifecycle(source, seen_event_ids):
@@ -226,4 +250,32 @@ def scrape_source(source_id):
         )
         return {"status": "failed", "message": str(exc)}
 
-    return _upsert_parsed_events(source, parsed_events)
+    for item in parsed_events:
+        try:
+            event = upsert_event(item, source)
+            seen_event_ids.append(event.id)
+            created_or_updated += 1
+        except Exception as exc:
+            errors.append(f"{item.get('event_name', '?')}: {exc}")
+
+    apply_lifecycle(source, seen_event_ids)
+
+    source.last_scraped_at = timezone.now()
+    if errors and created_or_updated:
+        source.last_scrape_status = ScrapeSource.ScrapeStatus.PARTIAL
+    elif errors:
+        source.last_scrape_status = ScrapeSource.ScrapeStatus.FAILED
+    else:
+        source.last_scrape_status = ScrapeSource.ScrapeStatus.SUCCESS
+    source.last_scrape_log = (
+        f"Processed {created_or_updated} events."
+        if not errors
+        else f"Processed {created_or_updated} events. Errors: {'; '.join(errors)}"
+    )
+    source.save(update_fields=["last_scraped_at", "last_scrape_status", "last_scrape_log"])
+
+    return {
+        "status": source.last_scrape_status,
+        "processed": created_or_updated,
+        "errors": errors,
+    }

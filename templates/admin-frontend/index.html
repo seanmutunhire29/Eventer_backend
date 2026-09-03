@@ -13,6 +13,7 @@
       <h1>Eventer Admin</h1>
       <nav>
         <button data-page="dashboard">Dashboard</button>
+        <button data-page="review">Review Queue</button>
         <button data-page="events">Events</button>
         <button data-page="unresolved">Unresolved Locations</button>
         <button data-page="buildings">Buildings</button>
@@ -25,7 +26,7 @@
     <main id="content">
       <section id="login-page" class="page">
         <h2>Staff Login</h2>
-        <form id="login-form">
+        <form id="login-form" method="post">
           <label>Username <input name="username" required></label>
           <label>Password <input name="password" type="password" required></label>
           <button type="submit">Login</button>
@@ -39,11 +40,19 @@
         <h3>Recent Scrapes</h3>
         <div id="recent-scrapes"></div>
       </section>
+      <section id="review-page" class="page hidden">
+        <h2>Review Queue</h2>
+        <p>Events extracted from email (including flyer images) land here first and only appear in the app once approved.</p>
+        <div class="toolbar">
+          <button id="review-approve">Approve Selected</button>
+          <button id="review-reject">Reject Selected</button>
+        </div>
+        <div id="review-table"></div>
+      </section>
       <section id="events-page" class="page hidden">
         <h2>Events Manager</h2>
         <p class="page-intro">View, edit, and create events shown in the mobile app. <a href="#" class="help-link" data-help="help-events">How do I manage events?</a></p>
         <div class="toolbar">
-          <button id="bulk-verify">Bulk Verify</button>
           <button id="bulk-deactivate">Bulk Deactivate</button>
           <button id="new-event-btn">New Event</button>
         </div>

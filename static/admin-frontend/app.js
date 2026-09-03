@@ -3,6 +3,18 @@ const tokenKey = "eventer_admin_token";
 
 const state = { token: sessionStorage.getItem(tokenKey), selectedBuildingId: null, selectedSourceId: null };
 let tables = {};
+let buildingOptionsCache = null;
+
+// { [buildingId]: "Official Name" } for the searchable building-picker
+// editor used in Unresolved Locations and Review Queue. Buildings are
+// imported from the frontend's geojson (see import_buildings_geojson) so
+// picking one always gives a location that's real and mappable.
+async function getBuildingOptions() {
+  if (buildingOptionsCache) return buildingOptionsCache;
+  const buildings = await api("/buildings/");
+  buildingOptionsCache = Object.fromEntries(buildings.map((b) => [b.id, b.official_name]));
+  return buildingOptionsCache;
+}
 
 function authHeaders() {
   return state.token ? { Authorization: `Token ${state.token}`, "Content-Type": "application/json" } : { "Content-Type": "application/json" };
@@ -26,6 +38,7 @@ function showPage(name) {
     btn.classList.toggle("active", btn.dataset.page === name);
   });
   if (name === "dashboard") loadDashboard();
+  if (name === "review") loadReviewQueue();
   if (name === "events") loadEvents();
   if (name === "unresolved") loadUnresolved();
   if (name === "buildings") loadBuildings();
@@ -100,6 +113,59 @@ function destroyTable(name) {
   if (tables[name]) { tables[name].destroy(); delete tables[name]; }
 }
 
+async function loadReviewQueue() {
+  const [data, buildingOptions] = await Promise.all([api("/events/pending/"), getBuildingOptions()]);
+  destroyTable("review");
+  tables.review = new Tabulator("#review-table", {
+    data, layout: "fitColumns", selectable: true, height: "500px",
+    placeholder: "Nothing pending review.",
+    columns: [
+      { formatter: "rowSelection", titleFormatter: "rowSelection", hozAlign: "center", headerSort: false, width: 40 },
+      { title: "Name", field: "event_name" },
+      { title: "Category", field: "category" },
+      { title: "Start", field: "start_time" },
+      { title: "Scraped Location", field: "unresolved_location", width: 140 },
+      {
+        title: "Match Building",
+        field: "building",
+        editor: "list",
+        editorParams: { values: buildingOptions, autocomplete: true, listOnEmpty: true, placeholderText: "Search buildings..." },
+        formatter: (cell) => buildingOptions[cell.getValue()] ?? "— unresolved —",
+        cellEdited: async (cell) => {
+          const row = cell.getRow().getData();
+          await api(`/events/${row.id}/`, {
+            method: "PATCH",
+            body: JSON.stringify({ building: parseInt(row.building, 10), unresolved_location: null }),
+          });
+        },
+      },
+      { title: "Description", field: "description", formatter: "textarea" },
+      { title: "Approve", formatter: () => "Approve", width: 90, cellClick: async (_, cell) => {
+        await reviewAction("approve", [cell.getRow().getData().id]);
+        loadReviewQueue();
+      }},
+      { title: "Reject", formatter: () => "Reject", width: 90, cellClick: async (_, cell) => {
+        await reviewAction("reject", [cell.getRow().getData().id]);
+        loadReviewQueue();
+      }},
+    ],
+  });
+}
+
+async function reviewAction(action, ids) {
+  if (!ids.length) return alert("Select events first");
+  await api("/events/bulk/", { method: "POST", body: JSON.stringify({ action, ids }) });
+}
+
+document.getElementById("review-approve").addEventListener("click", async () => {
+  await reviewAction("approve", tables.review.getSelectedData().map((r) => r.id));
+  loadReviewQueue();
+});
+document.getElementById("review-reject").addEventListener("click", async () => {
+  await reviewAction("reject", tables.review.getSelectedData().map((r) => r.id));
+  loadReviewQueue();
+});
+
 async function loadEvents() {
   const data = await api("/events/");
   destroyTable("events");
@@ -109,11 +175,28 @@ async function loadEvents() {
       { title: "Name", field: "event_name", editor: "input" },
       { title: "Category", field: "category", editor: "input" },
       { title: "Start", field: "start_time" },
+      { title: "Review", field: "review_status" },
       { title: "Active", field: "is_active", formatter: "tickCross" },
-      { title: "Verified", field: "is_verified", formatter: "tickCross" },
       { title: "Save", formatter: () => "Save", width: 70, cellClick: async (_, cell) => {
         const row = cell.getRow().getData();
-        await api(`/events/${row.id}/`, { method: "PATCH", body: JSON.stringify(row) });
+        const btn = cell.getElement();
+        try {
+          await api(`/events/${row.id}/`, { method: "PATCH", body: JSON.stringify(row) });
+          btn.textContent = "Saved ✓";
+          setTimeout(() => { btn.textContent = "Save"; }, 1500);
+        } catch (err) {
+          btn.textContent = "Failed";
+          alert(`Save failed: ${err.message}`);
+          setTimeout(() => { btn.textContent = "Save"; }, 1500);
+        }
+      }},
+      { title: "Approve", formatter: () => "Approve", width: 90, cellClick: async (_, cell) => {
+        await reviewAction("approve", [cell.getRow().getData().id]);
+        loadEvents();
+      }},
+      { title: "Reject", formatter: () => "Reject", width: 90, cellClick: async (_, cell) => {
+        await reviewAction("reject", [cell.getRow().getData().id]);
+        loadEvents();
       }},
     ],
   });
@@ -126,7 +209,6 @@ async function bulkEventAction(action) {
   loadEvents();
 }
 
-document.getElementById("bulk-verify").addEventListener("click", () => bulkEventAction("verify"));
 document.getElementById("bulk-deactivate").addEventListener("click", () => bulkEventAction("deactivate"));
 document.getElementById("new-event-btn").addEventListener("click", async () => {
   const name = prompt("Event name?");
@@ -140,25 +222,30 @@ document.getElementById("new-event-btn").addEventListener("click", async () => {
       category: "club_org_meeting",
       other_info: {},
       is_active: true,
-      is_verified: false,
     }),
   });
   loadEvents();
 });
 
 async function loadUnresolved() {
-  const data = await api("/events/unresolved/");
+  const [data, buildingOptions] = await Promise.all([api("/events/unresolved/"), getBuildingOptions()]);
   destroyTable("unresolved");
   tables.unresolved = new Tabulator("#unresolved-table", {
     data, layout: "fitColumns", height: "400px",
     columns: [
       { title: "Event", field: "event_name" },
       { title: "Location", field: "unresolved_location" },
-      { title: "Assign Building ID", field: "building", editor: "input" },
+      {
+        title: "Match Building",
+        field: "building",
+        editor: "list",
+        editorParams: { values: buildingOptions, autocomplete: true, listOnEmpty: true, placeholderText: "Search buildings..." },
+        formatter: (cell) => buildingOptions[cell.getValue()] ?? "",
+      },
       { title: "Save Alias", formatter: () => "Assign", cellClick: async (_, cell) => {
         const row = cell.getRow().getData();
         const buildingId = row.building;
-        if (!buildingId) return alert("Enter building ID");
+        if (!buildingId) return alert("Pick a building first");
         await api(`/events/${row.id}/`, {
           method: "PATCH",
           body: JSON.stringify({ building: parseInt(buildingId, 10), unresolved_location: null }),
@@ -235,6 +322,7 @@ document.getElementById("new-building-btn").addEventListener("click", async () =
     method: "POST",
     body: JSON.stringify({ official_name: name, lat: 43.7, lng: -72.29, geojson_id: name.toLowerCase().replace(/\s+/g, "-") }),
   });
+  buildingOptionsCache = null;
   loadBuildings();
 });
 
@@ -315,9 +403,12 @@ document.getElementById("view-logs-btn").addEventListener("click", async () => {
   document.getElementById("source-logs").textContent = JSON.stringify(logs, null, 2);
 });
 
+const validPages = ["dashboard", "review", "events", "unresolved", "buildings", "aliases", "sources"];
+const requestedPage = validPages.includes(window.location.hash.slice(1)) ? window.location.hash.slice(1) : "dashboard";
+
 if (state.token) {
   document.getElementById("sidebar").style.display = "block";
-  showPage("dashboard");
+  showPage(requestedPage);
 } else {
   document.getElementById("sidebar").style.display = "none";
   showPage("login");

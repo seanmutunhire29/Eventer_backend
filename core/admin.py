@@ -24,8 +24,8 @@ class BuildingAliasAdmin(admin.ModelAdmin):
 
 @admin.register(ScrapeSource)
 class ScrapeSourceAdmin(admin.ModelAdmin):
-    list_display = ("label", "url", "is_active", "last_scrape_status", "last_scraped_at")
-    list_filter = ("is_active", "last_scrape_status")
+    list_display = ("label", "source_type", "url", "is_active", "last_scrape_status", "last_scraped_at")
+    list_filter = ("source_type", "is_active", "last_scrape_status")
 
 
 @admin.register(Event)
