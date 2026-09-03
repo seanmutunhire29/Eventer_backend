@@ -1,10 +1,76 @@
-# Eventer — Backend
+# Eventer — Campus Events Discovery App (Backend)
 
-Backend service for **Eventer**, a campus event discovery app for Dartmouth College. This repo contains the API, the scraper pipeline, and the admin portal. The mobile app (React Native) lives in a separate repository and consumes this service over HTTP.
+**Automated campus event ingestion + read-optimized API for a Dartmouth College events app**
+
+**Python · Django · Django REST Framework · Celery · Celery Beat · Redis · SQLite**
+
+**Mobile client:** [Eventer_Frontend](../Eventer_Frontend/) (React Native)
 
 ---
 
-## 1. Overview
+## What It Is
+
+Campus events at Dartmouth are scattered across multiple websites with inconsistent formats, schedules, and location names. **Eventer** solves that by automatically ingesting those feeds, normalizing them into a canonical events-and-buildings dataset, and exposing the result through a mobile-friendly REST API.
+
+This repository is the backend: the scraper pipeline, data models, public API, staff admin portal, and admin API. The React Native mobile app lives in a separate repo and consumes this service over HTTP.
+
+---
+
+## Highlights
+
+These map directly to the backend portion of the project:
+
+- **Built an automated event-ingestion pipeline** using Django and Celery Beat that normalizes campus event feeds into a canonical events-and-buildings dataset.
+- **Implemented configurable source selectors, building-alias resolution, event deduplication, lifecycle management, and per-source logging** to support reliable ingestion from changing event sources.
+- **Developed a read-optimized Django REST Framework API** with filtering, delta-sync support (`?since=`), and nested building data for the mobile client.
+
+| Capability | Implementation |
+| ---------- | -------------- |
+| Scheduled ingestion | Celery Beat schedules per-source scrapes via [`scraper/signals.py`](scraper/signals.py); tasks in [`scraper/tasks.py`](scraper/tasks.py) |
+| 6-step scrape pipeline | Fetch → parse → normalize → dedupe → lifecycle → log in [`scraper/engine.py`](scraper/engine.py) |
+| Configurable selectors | Per-source `selector_config` JSON on `ScrapeSource` — add or change parsers without a code deploy |
+| Building-alias resolution | `resolve_building()` matches scraped location strings against `BuildingAlias` records |
+| Deduplication | Upsert on `(event_name, building, start_time)` |
+| Lifecycle management | Deactivate after 2 missed scrapes; hard-delete 7 days after `end_time` |
+| Per-source logging | `last_scraped_at`, `last_scrape_status`, `last_scrape_log` on each scrape source |
+| Staff admin portal | HTML/CSS/JS client at `static/admin-frontend/` backed by a dedicated admin API |
+
+---
+
+## Architecture
+
+```mermaid
+flowchart LR
+  Sources[Campus event websites] --> Scraper[Celery scraper pipeline]
+  Scraper --> DB[(Events + Buildings + Aliases)]
+  DB --> PublicAPI[Public DRF API]
+  DB --> AdminAPI[Staff admin API]
+  AdminAPI --> AdminUI[HTML admin portal]
+  PublicAPI --> Mobile[React Native app]
+```
+
+---
+
+## Quick Run
+
+```bash
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py loaddata core/fixtures/buildings.json core/fixtures/sample_events.json  # optional
+python manage.py runserver
+```
+
+For scheduled scrapes, start Redis (`docker compose up -d`) and run a Celery worker + beat process. Sample fixtures live in [`core/fixtures/`](core/fixtures/).
+
+Verify: `GET http://localhost:8000/api/events/` returns JSON.
+
+---
+
+## Developer Reference
+
+Detailed backend specification for developers and contributors.
+
+### 1. Overview
 
 The backend is responsible for:
 
@@ -17,7 +83,7 @@ The mobile app owns its own local SQLite database for user preferences, reminder
 
 ---
 
-## 2. Tech Stack
+### 2. Tech Stack
 
 | Layer           | Technology                                                                                                                 |
 | --------------- | -------------------------------------------------------------------------------------------------------------------------- |
@@ -31,9 +97,9 @@ The mobile app owns its own local SQLite database for user preferences, reminder
 
 ---
 
-## 3. Data Model
+### 3. Data Model
 
-### 3.1 `events`
+#### 3.1 `events`
 
 | Column      | Type           | Notes                                                                         |
 | ----------- | -------------- | ----------------------------------------------------------------------------- |
@@ -51,7 +117,7 @@ The mobile app owns its own local SQLite database for user preferences, reminder
 | is_active   | BOOLEAN        | Admin can soft-delete/hide; also set by the scraper lifecycle                 |
 | is_verified | BOOLEAN        | Admin-verified vs. raw scrape                                                 |
 
-### 3.2 `buildings`
+#### 3.2 `buildings`
 
 | Column        | Type         | Notes                                        |
 | ------------- | ------------ | -------------------------------------------- |
@@ -61,7 +127,7 @@ The mobile app owns its own local SQLite database for user preferences, reminder
 | lng           | FLOAT        |                                              |
 | geojson_id    | VARCHAR(100) | Links to the GeoJSON feature used by the app |
 
-### 3.3 `building_aliases`
+#### 3.3 `building_aliases`
 
 | Column      | Type           | Notes                                     |
 | ----------- | -------------- | ----------------------------------------- |
@@ -70,7 +136,7 @@ The mobile app owns its own local SQLite database for user preferences, reminder
 | alias       | VARCHAR(255)   | Student nickname or scraper-produced name |
 | source      | VARCHAR(100)   | e.g. `scraper`, `admin`, `student_report` |
 
-### 3.4 `scrape_sources`
+#### 3.4 `scrape_sources`
 
 | Column                | Type         | Notes                                                                                  |
 | --------------------- | ------------ | -------------------------------------------------------------------------------------- |
@@ -86,7 +152,7 @@ The mobile app owns its own local SQLite database for user preferences, reminder
 
 ---
 
-## 4. Scraper Pipeline
+### 4. Scraper Pipeline
 
 The scraper runs on a schedule (default every 3 hours, configurable per source) via Celery Beat or a cron-triggered management command. For each **active** `scrape_source`:
 
@@ -101,7 +167,7 @@ The scraper runs on a schedule (default every 3 hours, configurable per source) 
 
 ---
 
-## 5. Public API (consumed by the mobile app)
+### 5. Public API (consumed by the mobile app)
 
 All endpoints are read-only and require no authentication.
 
@@ -116,7 +182,7 @@ All endpoints are read-only and require no authentication.
 
 ---
 
-## 6. Admin Portal
+### 6. Admin Portal
 
 The admin portal is **not** Django Admin. It's a standalone web app built with plain HTML/CSS/JS, but it lives **inside this repo**, at `static/admin-frontend/`, and is served directly by Django as a static site (e.g. via a catch-all view or `whitenoise`/Django's static file handling) rather than being deployed as a separate project. It's still accessible over the internet at a path or subdomain of the backend's own domain (e.g. `https://api.eventer.app/admin-frontend/`).
 
@@ -124,7 +190,7 @@ It is a pure frontend client — all of its functionality is powered by a dedica
 
 Required modules (each maps to a page/view inside `static/admin-frontend/`):
 
-### 6.1 Events Manager
+#### 6.1 Events Manager
 
 - Sortable/filterable list (date, category, building, scrape source, `is_active`, `is_verified`)
 - Inline editing of any field
@@ -133,14 +199,14 @@ Required modules (each maps to a page/view inside `static/admin-frontend/`):
 - Bulk actions: bulk delete, bulk mark verified, bulk change category
 - **Unresolved Locations** view: events where the scraper couldn't match a building. Admin manually assigns a building, optionally saving the mapping as a new alias for future scrapes.
 
-### 6.2 Buildings Manager
+#### 6.2 Buildings Manager
 
 - List + map view of all buildings
 - CRUD: official name, lat/lng, GeoJSON ID
 - Alias manager per building: add/edit/delete aliases with source label
 - **Suggest Aliases** view: surfaces unique unresolved location strings from recent scrapes for quick assignment to buildings
 
-### 6.3 Scrape Sources Manager
+#### 6.3 Scrape Sources Manager
 
 - List with status indicators (last scrape status, last scraped time)
 - Add/edit/delete sources: URL, label, interval, `selector_config` (JSON editor with syntax highlighting)
@@ -148,13 +214,13 @@ Required modules (each maps to a page/view inside `static/admin-frontend/`):
 - **Run Now** — trigger an immediate out-of-schedule scrape for a specific source
 - Scrape log viewer — last N logs per source with timestamps and error detail
 
-### 6.4 Dashboard
+#### 6.4 Dashboard
 
 - Summary stats: events today, active events this week, events by category, scrape health (% success in last 24h)
 - Recent scrape activity feed
 - Unresolved location count with a quick link into the alias manager
 
-### 6.5 Admin API (backend surface for the portal)
+#### 6.5 Admin API (backend surface for the portal)
 
 The HTML/JS admin app authenticates against the backend (e.g. a login form posting to a token/session endpoint) and then drives everything through endpoints like:
 
@@ -177,7 +243,7 @@ All `/api/admin/*` endpoints require staff authentication; they are entirely sep
 
 ---
 
-## 7. Event Categories
+### 7. Event Categories
 
 Fixed enum used by both `events.category` and the `/api/categories/` endpoint. Icon files and accent colors are metadata served alongside the category list — actual icon assets are owned by the frontend, but the backend should store/serve the mapping.
 
@@ -196,7 +262,7 @@ Fixed enum used by both `events.category` and the `/api/categories/` endpoint. I
 
 ---
 
-## 8. Campus GeoJSON (Backend's Role)
+### 8. Campus GeoJSON (Backend's Role)
 
 The campus building GeoJSON itself is a static asset consumed by the mobile map, but this backend owns the **data that keeps it meaningful**:
 
@@ -207,13 +273,13 @@ The campus building GeoJSON itself is a static asset consumed by the mobile map,
 
 ---
 
-## 9. Migration Path: SQLite → PostgreSQL
+### 9. Migration Path: SQLite → PostgreSQL
 
 SQLite is the starting point for development. Before any real user load, the project should migrate to PostgreSQL. Since this is Django, it's primarily a settings/config change (`DATABASES`) plus running migrations against the new database — but plan the timing early rather than treating it as a last-minute switch, and avoid SQLite-specific assumptions (e.g. in JSON field usage or raw queries) that won't translate cleanly.
 
 ---
 
-## 10. Future Considerations
+### 10. Future Considerations
 
 These are not in current scope but should inform schema/API decisions now:
 
@@ -224,7 +290,7 @@ These are not in current scope but should inform schema/API decisions now:
 
 ---
 
-## 11. Explicit Non-Goals of This Repo
+### 11. Explicit Non-Goals of This Repo
 
 To keep the boundary with the mobile frontend repo clean:
 
