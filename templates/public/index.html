@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eventer — Campus events on a map</title>
+  <meta name="description" content="Eventer is the Dartmouth campus events app. Browse events on a map, set reminders, and never miss campus life. Download for Android or iOS.">
+  <link rel="icon" href="/static/public/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Sora:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/public/styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="/">
+      <img src="/static/public/icon.png" alt="" width="36" height="36">
+      <span>Eventer</span>
+    </a>
+    <nav>
+      <a href="#features">Features</a>
+      <a href="#download">Download</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">Dartmouth College</p>
+        <h1>Never miss campus life.</h1>
+        <p class="lede">Your companion for discovering what’s happening at Dartmouth — on a map, with reminders, and without creating an account.</p>
+        <div class="cta-row" id="download">
+          {% if has_android %}
+            <a class="btn btn-primary" href="{% url 'download-android' %}">Download for Android</a>
+          {% else %}
+            <span class="btn btn-primary btn-disabled" aria-disabled="true">Android coming soon</span>
+          {% endif %}
+          {% if has_ios %}
+            <a class="btn btn-secondary" href="{% url 'download-ios' %}">Download for iOS</a>
+          {% else %}
+            <span class="btn btn-secondary btn-disabled" aria-disabled="true">iOS coming soon</span>
+          {% endif %}
+        </div>
+        {% if release %}
+          <p class="version">Version {{ release.version }} · campus beta</p>
+        {% else %}
+          <p class="version">Campus beta — builds will appear here when published</p>
+        {% endif %}
+      </div>
+      <div class="hero-mark" aria-hidden="true">
+        <img src="/static/public/icon.png" alt="">
+      </div>
+    </section>
+
+    <section class="pitch">
+      <p>Campus events are scattered across websites and inboxes. Eventer pulls them into one place so students can see what’s on today, where it is, and get a reminder before it starts.</p>
+    </section>
+
+    <section class="features" id="features">
+      <h2>What’s in the app</h2>
+      <div class="feature-grid">
+        <article class="feature-card">
+          <h3>Campus map</h3>
+          <p>Discover events happening across Dartmouth, right where they take place.</p>
+        </article>
+        <article class="feature-card">
+          <h3>Filters that fit your day</h3>
+          <p>Browse by day, category, or search so the events you care about find you.</p>
+        </article>
+        <article class="feature-card">
+          <h3>Reminders</h3>
+          <p>Set a local reminder on any event and get a ping before it starts. No account required.</p>
+        </article>
+        <article class="feature-card">
+          <h3>Works offline</h3>
+          <p>Events stay cached on your phone, so you can still browse when campus Wi‑Fi drops.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="install">
+      <h2>Install Eventer</h2>
+      <div class="install-grid">
+        <article class="install-card">
+          <h3>Android</h3>
+          <p>Download the APK and open it on your phone. You may need to allow installs from this browser.</p>
+          {% if has_android %}
+            <a class="btn btn-primary" href="{% url 'download-android' %}">Download APK</a>
+          {% else %}
+            <span class="btn btn-primary btn-disabled" aria-disabled="true">APK not published yet</span>
+          {% endif %}
+        </article>
+        <article class="install-card">
+          <h3>iOS</h3>
+          <p>An <code>.ipa</code> is available to download. Installing it on a normal iPhone still requires TestFlight or a signed Apple build. Direct sideload will not work for most devices.</p>
+          {% if has_ios %}
+            <a class="btn btn-secondary" href="{% url 'download-ios' %}">Download IPA</a>
+          {% else %}
+            <span class="btn btn-secondary btn-disabled" aria-disabled="true">IPA not published yet</span>
+          {% endif %}
+        </article>
+      </div>
+      {% if release and release.notes %}
+        <p class="notes">{{ release.notes }}</p>
+      {% endif %}
+    </section>
+  </main>
+
+  <footer>
+    <p>Eventer is a campus beta. Expect rough edges, and thanks for trying it.</p>
+    <p class="footer-meta">{% if release %}v{{ release.version }}{% else %}Eventer{% endif %} · Dartmouth College</p>
+  </footer>
+</body>
+</html>

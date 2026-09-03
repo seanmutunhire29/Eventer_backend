@@ -1,0 +1,233 @@
+:root {
+  --primary: #004e2d;
+  --primary-container: #00693e;
+  --on-primary: #ffffff;
+  --surface: #fcf9f8;
+  --surface-container: #f0edec;
+  --surface-high: #ebe7e7;
+  --on-surface: #1c1b1b;
+  --on-surface-variant: #3f4941;
+  --outline: #bec9bf;
+  --glass: rgba(255, 255, 255, 0.65);
+  --shadow: 0 12px 40px rgba(0, 78, 45, 0.08);
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--surface);
+  color: var(--on-surface);
+  font-family: Inter, system-ui, sans-serif;
+  line-height: 1.5;
+}
+
+h1, h2, h3, .brand span {
+  font-family: Sora, Inter, sans-serif;
+  letter-spacing: -0.02em;
+}
+
+a { color: var(--primary); }
+
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  max-width: 1080px;
+  margin: 0 auto;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  text-decoration: none;
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.brand img {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.site-header nav {
+  display: flex;
+  gap: 1.25rem;
+}
+
+.site-header nav a {
+  text-decoration: none;
+  color: var(--on-surface-variant);
+  font-weight: 500;
+}
+
+.site-header nav a:hover { color: var(--primary); }
+
+.hero {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 3rem;
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 2rem;
+  align-items: center;
+}
+
+.eyebrow {
+  color: var(--primary-container);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+  margin: 0 0 0.75rem;
+}
+
+.hero h1 {
+  font-size: clamp(2.25rem, 5vw, 3.4rem);
+  line-height: 1.15;
+  margin: 0 0 1rem;
+}
+
+.lede {
+  font-size: 1.15rem;
+  color: var(--on-surface-variant);
+  max-width: 34rem;
+  margin: 0 0 1.75rem;
+}
+
+.cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.85rem 1.25rem;
+  border-radius: 999px;
+  font-weight: 600;
+  text-decoration: none;
+  border: 1px solid transparent;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: var(--on-primary);
+}
+
+.btn-primary:hover { background: var(--primary-container); }
+
+.btn-secondary {
+  background: transparent;
+  color: var(--primary);
+  border-color: var(--outline);
+}
+
+.btn-secondary:hover { background: var(--surface-container); }
+
+.btn-disabled {
+  opacity: 0.45;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+.version {
+  margin: 1rem 0 0;
+  color: var(--on-surface-variant);
+  font-size: 0.9rem;
+}
+
+.hero-mark {
+  display: flex;
+  justify-content: center;
+}
+
+.hero-mark img {
+  width: min(280px, 70vw);
+  height: auto;
+  border-radius: 36px;
+  box-shadow: var(--shadow);
+}
+
+.pitch, .features, .install {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 1.5rem 3.5rem;
+}
+
+.pitch p {
+  font-size: 1.15rem;
+  color: var(--on-surface-variant);
+  max-width: 46rem;
+  margin: 0;
+}
+
+.features h2, .install h2 {
+  font-size: 1.75rem;
+  margin: 0 0 1.25rem;
+}
+
+.feature-grid, .install-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.feature-card, .install-card {
+  background: var(--glass);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 20px;
+  padding: 1.35rem 1.4rem;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(12px);
+}
+
+.feature-card h3, .install-card h3 {
+  margin: 0 0 0.45rem;
+  font-size: 1.15rem;
+  color: var(--primary);
+}
+
+.feature-card p, .install-card p {
+  margin: 0;
+  color: var(--on-surface-variant);
+}
+
+.install-card .btn { margin-top: 1rem; }
+
+.install-card code {
+  font-size: 0.9em;
+  background: var(--surface-high);
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+}
+
+.notes {
+  margin: 1.25rem 0 0;
+  color: var(--on-surface-variant);
+}
+
+footer {
+  border-top: 1px solid var(--outline);
+  padding: 1.5rem;
+  text-align: center;
+  color: var(--on-surface-variant);
+  font-size: 0.9rem;
+}
+
+.footer-meta { margin: 0.35rem 0 0; }
+
+@media (max-width: 800px) {
+  .hero { grid-template-columns: 1fr; padding-top: 1.5rem; }
+  .hero-mark { order: -1; }
+  .feature-grid, .install-grid { grid-template-columns: 1fr; }
+}

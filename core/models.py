@@ -178,3 +178,27 @@ class Event(models.Model):
 
     def __str__(self):
         return self.event_name
+
+
+class AppRelease(models.Model):
+    version = models.CharField(max_length=32, default="1.0.0")
+    notes = models.TextField(blank=True)
+    android_apk = models.FileField(upload_to="downloads/", blank=True)
+    ios_ipa = models.FileField(upload_to="downloads/", blank=True)
+    is_published = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Eventer {self.version}"
+
+    @property
+    def has_android(self):
+        return bool(self.android_apk)
+
+    @property
+    def has_ios(self):
+        return bool(self.ios_ipa)

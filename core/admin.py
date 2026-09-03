@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Building, BuildingAlias, Event, ScrapeSource
+from .models import AppRelease, Building, BuildingAlias, Event, ScrapeSource
 
 
 class BuildingAliasInline(admin.TabularInline):
@@ -40,3 +40,10 @@ class EventAdmin(admin.ModelAdmin):
     )
     list_filter = ("category", "is_active", "is_verified")
     search_fields = ("event_name", "description", "unresolved_location")
+
+
+@admin.register(AppRelease)
+class AppReleaseAdmin(admin.ModelAdmin):
+    list_display = ("version", "is_published", "android_apk", "ios_ipa", "updated_at")
+    list_filter = ("is_published",)
+    search_fields = ("version", "notes")
