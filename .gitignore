@@ -9,3 +9,4 @@ media/
 venv/
 *.egg-info/
 .DS_Store
+.gstack/

@@ -8,94 +8,138 @@
   <link rel="icon" href="/static/public/favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Sora:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/public/styles.css">
 </head>
 <body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
   <header class="site-header">
-    <a class="brand" href="/">
-      <img src="/static/public/eventer_logo.png" alt="Eventer">
-    </a>
-    <nav>
-      <a href="#features">Features</a>
-      <a href="#download">Download</a>
-    </nav>
+    <div class="header-inner">
+      <a class="brand" href="/">
+        <img src="/static/public/eventer_logo.png" alt="Eventer">
+      </a>
+      <nav aria-label="Primary">
+        <a href="#features">What's inside</a>
+        <a href="#install">Get the app</a>
+      </nav>
+    </div>
   </header>
 
-  <main>
+  <main id="main">
     <section class="hero">
-      <div class="hero-copy">
-        <p class="eyebrow">Dartmouth College</p>
-        <h1>Never miss campus life.</h1>
-        <p class="lede">Your companion for discovering what’s happening at Dartmouth — on a map, with reminders, and without creating an account.</p>
-        <div class="cta-row" id="download">
-          {% if has_android %}
-            <a class="btn btn-primary" href="{% url 'download-android' %}">Download for Android</a>
-          {% else %}
-            <span class="btn btn-primary btn-disabled" aria-disabled="true">Android coming soon</span>
-          {% endif %}
-          {% if has_ios %}
-            <a class="btn btn-secondary" href="{% url 'download-ios' %}">Download for iOS</a>
-          {% else %}
-            <span class="btn btn-secondary btn-disabled" aria-disabled="true">iOS coming soon</span>
-          {% endif %}
+      <div class="hero-inner">
+        <div class="plaque">
+          <div class="plaque-inner">
+            <p class="plaque-title">Campus events directory</p>
+            <h1>Never miss<br>campus life.</h1>
+            <p class="plaque-lede">Your companion for discovering what's happening at Dartmouth — on a map, with reminders, and without creating an account.</p>
+            <div class="cta-row">
+              {% if has_android %}
+                <a class="btn btn-light" href="{% url 'download-android' %}">Download for Android</a>
+              {% else %}
+                <span class="btn btn-light btn-disabled" aria-disabled="true">Android — coming soon</span>
+              {% endif %}
+              {% if has_ios %}
+                <a class="btn btn-outline" href="{% url 'download-ios' %}">Download for iOS</a>
+              {% else %}
+                <span class="btn btn-outline btn-disabled" aria-disabled="true">iOS — coming soon</span>
+              {% endif %}
+            </div>
+            {% if release %}
+              <p class="version">Version {{ release.version }}<span class="dot-sep" aria-hidden="true"></span>campus beta</p>
+            {% else %}
+              <p class="version">Campus beta<span class="dot-sep" aria-hidden="true"></span>builds will appear here when published</p>
+            {% endif %}
+          </div>
         </div>
-        {% if release %}
-          <p class="version">Version {{ release.version }} · campus beta</p>
-        {% else %}
-          <p class="version">Campus beta — builds will appear here when published</p>
-        {% endif %}
-      </div>
-      <div class="hero-mark" aria-hidden="true">
-        <img src="/static/public/eventer_logo.png" alt="">
+
+        <aside class="board" aria-label="A sample night of campus events">
+          <p class="board-title">A Tuesday night on campus</p>
+          <ul class="board-list">
+            <li style="--i:0">
+              <span class="dot" style="--dot:#EA6C00"></span>
+              <span class="board-name">Free pizza, Collis Common Ground</span>
+              <span class="board-time">6:30 PM</span>
+            </li>
+            <li style="--i:1">
+              <span class="dot" style="--dot:#7C3AED"></span>
+              <span class="board-name">Open mixer, Sigma Delt</span>
+              <span class="board-time">7:00 PM</span>
+            </li>
+            <li style="--i:2">
+              <span class="dot" style="--dot:#00B4D8"></span>
+              <span class="board-name">A cappella show, Rollins Chapel</span>
+              <span class="board-time">8:00 PM</span>
+            </li>
+            <li style="--i:3">
+              <span class="dot" style="--dot:#D91B5C"></span>
+              <span class="board-name">Intramural hockey, Thompson Arena</span>
+              <span class="board-time">9:00 PM</span>
+            </li>
+          </ul>
+          <p class="board-note">A typical night, pulled from four different clubs' pages. Eventer keeps a live version of this on your phone.</p>
+        </aside>
       </div>
     </section>
 
     <section class="pitch">
-      <p>Campus events are scattered across websites and inboxes. Eventer pulls them into one place so students can see what’s on today, where it is, and get a reminder before it starts.</p>
+      <p>Campus events are scattered across websites, list-servs, and flyers stapled to kiosks. Eventer pulls them into one place, so you can see what's on today, where it is, and get a reminder before it starts.</p>
     </section>
 
-    <section class="features" id="features">
-      <h2>What’s in the app</h2>
-      <div class="feature-grid">
-        <article class="feature-card">
-          <h3>Campus map</h3>
-          <p>Discover events happening across Dartmouth, right where they take place.</p>
-        </article>
-        <article class="feature-card">
-          <h3>Filters that fit your day</h3>
-          <p>Browse by day, category, or search so the events you care about find you.</p>
-        </article>
-        <article class="feature-card">
-          <h3>Reminders</h3>
-          <p>Set a local reminder on any event and get a ping before it starts. No account required.</p>
-        </article>
-        <article class="feature-card">
-          <h3>Works offline</h3>
-          <p>Events stay cached on your phone, so you can still browse when campus Wi‑Fi drops.</p>
-        </article>
-      </div>
+    <section class="directory" id="features">
+      <h2>What's inside</h2>
+      <ul class="directory-list">
+        <li>
+          <span class="dcode">MAP</span>
+          <div>
+            <h3>Campus map</h3>
+            <p>See every event pinned right where it's happening.</p>
+          </div>
+        </li>
+        <li>
+          <span class="dcode">FLTR</span>
+          <div>
+            <h3>Filters that fit your day</h3>
+            <p>Browse by day, category, or search, so the events you care about find you.</p>
+          </div>
+        </li>
+        <li>
+          <span class="dcode">RMND</span>
+          <div>
+            <h3>Reminders</h3>
+            <p>Set a reminder on any event and get a ping before it starts. No account required.</p>
+          </div>
+        </li>
+        <li>
+          <span class="dcode">OFLN</span>
+          <div>
+            <h3>Works offline</h3>
+            <p>Events stay cached on your phone, so a dead Wi-Fi spot won't stop you.</p>
+          </div>
+        </li>
+      </ul>
     </section>
 
-    <section class="install">
+    <section class="install" id="install">
       <h2>Install Eventer</h2>
       <div class="install-grid">
-        <article class="install-card">
+        <article class="install-card install-card--green">
           <h3>Android</h3>
           <p>Download the APK and open it on your phone. You may need to allow installs from this browser.</p>
           {% if has_android %}
-            <a class="btn btn-primary" href="{% url 'download-android' %}">Download APK</a>
+            <a class="btn btn-light" href="{% url 'download-android' %}">Download APK</a>
           {% else %}
-            <span class="btn btn-primary btn-disabled" aria-disabled="true">APK not published yet</span>
+            <span class="btn btn-light btn-disabled" aria-disabled="true">APK not published yet</span>
           {% endif %}
         </article>
         <article class="install-card">
           <h3>iOS</h3>
-          <p>An <code>.ipa</code> is available to download. Installing it on a normal iPhone still requires TestFlight or a signed Apple build. Direct sideload will not work for most devices.</p>
+          <p>An <code>.ipa</code> is available to download. Installing it on a normal iPhone still needs TestFlight or a signed Apple build — direct sideloading won't work for most devices.</p>
           {% if has_ios %}
-            <a class="btn btn-secondary" href="{% url 'download-ios' %}">Download IPA</a>
+            <a class="btn btn-dark" href="{% url 'download-ios' %}">Download IPA</a>
           {% else %}
-            <span class="btn btn-secondary btn-disabled" aria-disabled="true">IPA not published yet</span>
+            <span class="btn btn-dark btn-disabled" aria-disabled="true">IPA not published yet</span>
           {% endif %}
         </article>
       </div>
@@ -106,8 +150,10 @@
   </main>
 
   <footer>
-    <p>Eventer is a campus beta. Expect rough edges, and thanks for trying it.</p>
-    <p class="footer-meta">{% if release %}v{{ release.version }}{% else %}Eventer{% endif %} · Dartmouth College</p>
+    <div class="footer-inner">
+      <p>Eventer is a campus beta. Expect rough edges, and thanks for trying it.</p>
+      <p class="footer-meta">{% if release %}Version {{ release.version }}{% else %}Eventer{% endif %}<span class="dot-sep" aria-hidden="true"></span>Dartmouth College</p>
+    </div>
   </footer>
 </body>
 </html>
